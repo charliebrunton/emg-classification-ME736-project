@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.io.wavfile as wav
+from scipy.signal import butter, filtfilt
 from features import extract_features
+from plot import plot_raw_signal
 
 def load_epochs(path, epoch_time, n_classes=4, channel=0):
     """
@@ -13,6 +15,9 @@ def load_epochs(path, epoch_time, n_classes=4, channel=0):
     """
     fs, data = wav.read(path)
     signal = data[:,channel] # channel = 0 -> TA recording only
+    # plot raw
+    plot_raw_signal(signal, fs, title="Raw EMG", save_path="../plots/raw_newdata.png")
+    signal = bandpass_filter(signal, fs, 15, 450)
 
     epoch_length = epoch_time * fs
     n_epochs = len(signal) // epoch_length
@@ -64,3 +69,13 @@ def segment_stream(signal, fs, window_ms=200, overlap=0.5):
     return np.array(X)
 
 # PREPROCESSING FUNCTIONS
+def bandpass_filter(signal, fs, low=20, high=450, order=4):
+    nyq = 0.5 * fs
+    b, a = butter(order, [low/nyq, high/nyq], btype="band")
+    return filtfilt(b, a, signal)
+
+def notch_filter(signal, fs, freq=50, Q=30):
+    from scipy.signal import iirnotch
+    nyq = 0.5 * fs
+    b, a = iirnotch(freq/nyq, Q)
+    return filtfilt(b, a, signal)
