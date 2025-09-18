@@ -30,19 +30,16 @@ def remove_offset(epoch):
     return epoch - np.mean(epoch)
 
 # FEATURE EXTRACTION WRAPPER
-def extract_features(epochs, threshold=0.01):
+def extract_features(epoch, threshold=0.01):
     """
-    Given list/array of epochs, return features:
-    [RMS, WL, ZC, SSC, WAMP]
+    Given a single epoch/window (1D array), return feature vector:
+    shape = (n_features,)
     """
-    feats = []
-    for epoch in epochs:
-        epoch = remove_offset(epoch)
-        feats.append([
-            rms(epoch),
-            wl(epoch),
-            zc(epoch, threshold),
-            ssc(epoch, threshold),
-            wamp(epoch, threshold)
-        ])
-    return np.array(feats)
+    epoch = remove_offset(epoch)
+    return np.array([
+        rms(epoch),
+        wl(epoch),
+        zc(epoch, threshold),
+        ssc(epoch, threshold),
+        wamp(epoch, threshold)
+    ])
